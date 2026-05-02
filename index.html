@@ -646,26 +646,46 @@ function showSuccess() {
 }
 
 async function submitForm() {
-  const name = document.getElementById('field-name').value.trim();
+  const name  = document.getElementById('field-name').value.trim();
   const phone = document.getElementById('field-phone').value.trim();
-  const err = document.getElementById('form-error');
+  const err   = document.getElementById('form-error');
+
   if (!name || !phone) { err.style.display = 'block'; return; }
   err.style.display = 'none';
+
   const btn = document.getElementById('btn-submit');
   document.getElementById('submit-text').style.display = 'none';
   document.getElementById('submit-spinner').style.display = 'block';
   btn.disabled = true;
-  const payload = { name, phone, q1: answers.q1||'—', q2: answers.q2||'—', q3: answers.q3||'—', q4: answers.q4||'—', source: 'landing', timestamp: new Date().toLocaleString('ru-RU',{timeZone:'Europe/Prague'}) };
 
-  // ── ВСТАВЬТЕ URL ВАШЕГО GOOGLE APPS SCRIPT ──
-  const SCRIPT_URL = 'PASTE_YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+  const payload = {
+    name,
+    phone,
+    visaType:     answers.q1 || '—',
+    incomeType:   answers.q2 || '—',
+    downPayment:  answers.q3 || '—',
+    citizenship:  answers.q4 || '—',
+    source:       'landing',
+    timestamp:    new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Prague' })
+  };
+
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNOEW020i1iQwi1v3KDpGDXeUNq_FB9fCtJPsOyjP5nycdRWSnL1ogGvj5o86L7DRW2g/exec';
+  const CALENDLY_URL = `https://calendly.com/irina-semenova-ovbmail/konzultace-s-irinou?name=${encodeURIComponent(name)}`;
 
   try {
-    if (SCRIPT_URL !== 'PASTE_YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') {
-      await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-    }
-    showSuccess();
-  } catch(e) { console.error(e); showSuccess(); }
+    await fetch(SCRIPT_URL, {
+      method:  'POST',
+      mode:    'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(payload)
+    });
+    // no-cors не возвращает response.ok, поэтому редиректим после await
+    window.location.href = CALENDLY_URL;
+  } catch(e) {
+    console.error('Submit error:', e);
+    // При ошибке сети — всё равно редиректим, чтобы клиент не завис
+    window.location.href = CALENDLY_URL;
+  }
 }
 
 
