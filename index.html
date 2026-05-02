@@ -658,15 +658,22 @@ async function submitForm() {
   document.getElementById('submit-spinner').style.display = 'block';
   btn.disabled = true;
 
+  // Берём текст лейбла, а не value радио-кнопки
+  function getLabel(name) {
+    const radio = document.querySelector(`input[name="${name}"]:checked`);
+    if (!radio) return '—';
+    return radio.closest('.quiz-option').querySelector('span').textContent.trim();
+  }
+
   const payload = {
     name,
     phone,
-    visaType:     answers.q1 || '—',
-    incomeType:   answers.q2 || '—',
-    downPayment:  answers.q3 || '—',
-    citizenship:  answers.q4 || '—',
-    source:       'landing',
-    timestamp:    new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Prague' })
+    visaType:    getLabel('q1'),
+    incomeType:  getLabel('q2'),
+    downPayment: getLabel('q3'),
+    citizenship: getLabel('q4'),
+    source:      'landing',
+    timestamp:   new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Prague' })
   };
 
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNOEW020i1iQwi1v3KdPGdXeUNq_FB9fCtJPsOyjP5nycdRWSnL1ogGvj5o86L7dRW2g/exec';
