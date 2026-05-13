@@ -816,6 +816,11 @@ async function submitForm() {
       body:    JSON.stringify(payload)
     });
     // no-cors не возвращает response.ok, поэтому редиректим после await
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      'event': 'form_submission',
+      'form_type': 'quiz_form'
+    });
     window.location.href = CALENDLY_URL;
   } catch(e) {
     console.error('Submit error:', e);
@@ -866,6 +871,11 @@ document.getElementById('quick-contact-form').addEventListener('submit', async f
   }
 
   // Очищаем форму и показываем success
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({
+    'event': 'form_submission',
+    'form_type': 'quick_contact_form'
+  });
   document.getElementById('quick-form-wrap').style.display = 'none';
   const successEl = document.getElementById('qc-success');
   successEl.style.display = 'block';
