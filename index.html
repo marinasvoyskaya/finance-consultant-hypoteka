@@ -526,6 +526,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <div class="quiz-options">
           <label class="quiz-option"><div class="opt-radio"></div><span>Есть 10–20% от стоимости недвижимости</span><input type="radio" name="q3" value="10-20" style="display:none"></label>
           <label class="quiz-option"><div class="opt-radio"></div><span>Есть больше 20%</span><input type="radio" name="q3" value="20plus" style="display:none"></label>
+          <label class="quiz-option"><div class="opt-radio"></div><span>Первоначального взноса пока нет, но есть своя недвижимость в Чехии</span><input type="radio" name="q3" value="property_cz" style="display:none"></label>
           <label class="quiz-option"><div class="opt-radio"></div><span>Денег на взнос пока нет</span><input type="radio" name="q3" value="none" style="display:none"></label>
         </div>
         <div class="quiz-nav">
@@ -783,7 +784,7 @@ async function submitForm() {
   const LABELS = {
     q1: { pmzh: 'ПМЖ', vnzh_work: 'ВНЖ', zdp: 'ZDP', student: 'Студ. виза / DO' },
     q2: { hpp: 'HPP', osvc: 'OSVČ', sro: 's.r.o.', none: 'Нет дохода' },
-    q3: { '20plus': 'больше 20%', '10-20': '10-20%', none: 'Взноса нет' },
+    q3: { '20plus': 'больше 20%', '10-20': '10-20%', property_cz: 'Есть недвижимость в Чехии', none: 'Взноса нет' },
     q4: { rf_rb: 'РФ / РБ', ua: 'Украина', sng: 'Казахстан / Армения / Грузия / Другие страны СНГ', other: 'Другое' }
   };
 
