@@ -719,6 +719,36 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </footer>
 
 <script>
+// ═══════════════════════════════════════════════════════════════
+// UTM CAPTURE — парсим при загрузке, сохраняем в localStorage
+// ═══════════════════════════════════════════════════════════════
+(function captureUTMs() {
+  const params = new URLSearchParams(window.location.search);
+  const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+  keys.forEach(key => {
+    if (params.has(key)) {
+      localStorage.setItem(key, params.get(key));
+    }
+  });
+})();
+
+function getUTMs() {
+  const keys = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term'];
+  const utms = {};
+  keys.forEach(key => {
+    utms[key] = localStorage.getItem(key) || '';
+  });
+  return utms;
+}
+
+function clearUTMs() {
+  ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term']
+    .forEach(key => localStorage.removeItem(key));
+}
+
+// ═══════════════════════════════════════════════════════════════
+// QUIZ LOGIC
+// ═══════════════════════════════════════════════════════════════
 const answers = {};
 let currentStep = 1;
 const totalSteps = 4;
@@ -768,6 +798,9 @@ function showSuccess() {
   document.getElementById('progress-wrap').style.display = 'none';
 }
 
+// ═══════════════════════════════════════════════════════════════
+// QUIZ SUBMIT
+// ═══════════════════════════════════════════════════════════════
 async function submitForm() {
   const name  = document.getElementById('field-name').value.trim();
   const phone = document.getElementById('field-phone').value.trim();
@@ -802,10 +835,11 @@ async function submitForm() {
     downPayment: getMapped('q3'),
     citizenship: getMapped('q4'),
     source:      'landing',
-    timestamp:   new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Prague' })
+    timestamp:   new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Prague' }),
+    ...getUTMs()
   };
 
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNOEW020i1iQwi1v3KdPGdXeUNq_FB9fCtJPsOyjP5nycdRWSnL1ogGvj5o86L7dRW2g/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynShzmZlk_fw1T7CrO-0j-rr_pWsTzNzOpyymy5T3_zMVpyyN0y5s4OQaYLjyhgIb5Nw/exec';
   const CALENDLY_URL = `https://calendly.com/irina-semenova-ovbmail/konzultace-s-irinou?name=${encodeURIComponent(name)}`;
 
   try {
@@ -815,7 +849,8 @@ async function submitForm() {
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload)
     });
-    // no-cors не возвращает response.ok, поэтому редиректим после await
+    // fetch завершился без сетевой ошибки — считаем успехом, чистим UTM
+    clearUTMs();
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
       'event': 'form_submission',
@@ -824,13 +859,14 @@ async function submitForm() {
     window.location.href = CALENDLY_URL;
   } catch(e) {
     console.error('Submit error:', e);
-    // При ошибке сети — всё равно редиректим, чтобы клиент не завис
+    // При сетевой ошибке UTM не чистим — сохраняются для повторной попытки
     window.location.href = CALENDLY_URL;
   }
 }
 
-
-// ── QUICK CONTACT FORM ──
+// ═══════════════════════════════════════════════════════════════
+// QUICK CONTACT FORM
+// ═══════════════════════════════════════════════════════════════
 document.getElementById('quick-contact-form').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -846,7 +882,7 @@ document.getElementById('quick-contact-form').addEventListener('submit', async f
   document.getElementById('qc-spinner').style.display = 'block';
   btn.disabled = true;
 
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzNOEW020i1iQwi1v3KdPGdXeUNq_FB9fCtJPsOyjP5nycdRWSnL1ogGvj5o86L7dRW2g/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynShzmZlk_fw1T7CrO-0j-rr_pWsTzNzOpyymy5T3_zMVpyyN0y5s4OQaYLjyhgIb5Nw/exec';
 
   const payload = {
     name,
@@ -856,7 +892,8 @@ document.getElementById('quick-contact-form').addEventListener('submit', async f
     downPayment: 'Быстрая форма (не указано)',
     citizenship: 'Быстрая форма (не указано)',
     source:      'quick_form',
-    timestamp:   new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Prague' })
+    timestamp:   new Date().toLocaleString('ru-RU', { timeZone: 'Europe/Prague' }),
+    ...getUTMs()
   };
 
   try {
@@ -866,11 +903,13 @@ document.getElementById('quick-contact-form').addEventListener('submit', async f
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload)
     });
-  } catch(err) {
-    console.error('Quick form error:', err);
+    // fetch завершился без сетевой ошибки — считаем успехом, чистим UTM
+    clearUTMs();
+  } catch(e) {
+    console.error('Quick form error:', e);
+    // При сетевой ошибке UTM не чистим — сохраняются для повторной попытки
   }
 
-  // Очищаем форму и показываем success
   window.dataLayer = window.dataLayer || [];
   window.dataLayer.push({
     'event': 'form_submission',
@@ -881,6 +920,9 @@ document.getElementById('quick-contact-form').addEventListener('submit', async f
   successEl.style.display = 'block';
 });
 
+// ═══════════════════════════════════════════════════════════════
+// ANIMATIONS & SCROLL
+// ═══════════════════════════════════════════════════════════════
 const obs = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => {
     if (e.isIntersecting) { setTimeout(() => e.target.classList.add('visible'), i * 80); obs.unobserve(e.target); }
