@@ -841,7 +841,6 @@ async function submitForm() {
   };
 
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynShzmZlk_fw1T7CrO-0j-rr_pWsTzNzOpyymy5T3_zMVpyyN0y5s4OQaYLjyhgIb5Nw/exec';
-  const CALENDLY_URL = `https://calendly.com/irina-semenova-ovbmail/konzultace-s-irinou?name=${encodeURIComponent(name)}`;
 
   try {
     await fetch(SCRIPT_URL, {
@@ -854,14 +853,16 @@ async function submitForm() {
     clearUTMs();
     window.dataLayer = window.dataLayer || [];
     window.dataLayer.push({
-      'event': 'form_submission',
+      'event': 'form_success',
       'form_type': 'quiz_form'
     });
-    window.location.href = CALENDLY_URL;
+    showSuccess();
   } catch(e) {
     console.error('Submit error:', e);
     // При сетевой ошибке UTM не чистим — сохраняются для повторной попытки
-    window.location.href = CALENDLY_URL;
+    btn.disabled = false;
+    document.getElementById('submit-text').style.display = 'block';
+    document.getElementById('submit-spinner').style.display = 'none';
   }
 }
 
